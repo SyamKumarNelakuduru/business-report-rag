@@ -1,0 +1,18 @@
+# Angular
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/.env
+
+# OS files
+.DS_Store__pycache__/
+*.pyc
+.env
+venv/
+.chroma/
+chromadb/
+.DS_Store

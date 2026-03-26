@@ -3,6 +3,7 @@ from pypdf import PdfReader
 
 DATA_DIR = Path("data/docs")
 
+
 def load_pdfs():
     pdf_files = list(DATA_DIR.glob("*.pdf"))
     documents = []
@@ -18,37 +19,56 @@ def load_pdfs():
 
         documents.append({
             "file_name": pdf_file.name,
-            "text": text
+            "text": text.strip()
         })
 
     return documents
 
 
-def chunk_text(text: str, chunk_size: int = 500):
+def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100):
     chunks = []
     start = 0
+    text = text.strip()
 
     while start < len(text):
         end = start + chunk_size
-        chunk = text[start:end]
-        chunks.append(chunk)
-        start = end
+        chunk = text[start:end].strip()
+
+        if chunk:
+            chunks.append(chunk)
+
+        start += chunk_size - overlap
 
     return chunks
 
 
-if __name__ == "__main__":
-    docs = load_pdfs()
+def prepare_chunk_records():
+    documents = load_pdfs()
+    records = []
 
-    if not docs:
+    for doc in documents:
+        chunks = chunk_text(doc["text"])
+
+        for idx, chunk in enumerate(chunks, start=1):
+            records.append({
+                "file_name": doc["file_name"],
+                "chunk_index": idx,
+                "chunk_text": chunk
+            })
+
+    return records
+
+
+if __name__ == "__main__":
+    records = prepare_chunk_records()
+
+    if not records:
         print("No PDF files found in data/docs/")
     else:
-        for doc in docs:
-            print(f"\nProcessing file: {doc['file_name']}")
-            chunks = chunk_text(doc["text"])
+        print(f"Total chunk records: {len(records)}")
 
-            print(f"Total chunks: {len(chunks)}")
-
-            for i, chunk in enumerate(chunks[:3], start=1):
-                print(f"\nChunk {i}:")
-                print(chunk[:300])
+        for record in records[:5]:
+            print("\n-------------------------")
+            print(f"File Name   : {record['file_name']}")
+            print(f"Chunk Index : {record['chunk_index']}")
+            print(f"Chunk Text  : {record['chunk_text'][:300]}")
